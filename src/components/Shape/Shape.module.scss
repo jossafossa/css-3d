@@ -1,0 +1,200 @@
+@use "sass:list";
+
+$max-sides: 24;
+
+// mixins and functions
+@mixin calc-angles($width-var, $height-var, $prefix: --) {
+  #{$prefix}rot: atan(#{$height-var} / #{$width-var});
+  #{$prefix}long: calc(#{$height-var} / sin(var(#{$prefix}rot)));
+}
+
+@mixin hsl-var($slug, $color) {
+  --#{$slug}-h: #{hue($color)};
+  --#{$slug}-s: #{saturation($color)};
+  --#{$slug}-l: #{lightness($color)};
+}
+
+@function hsl-var($slug, $lightness: 0%) {
+  @return hsl(
+    var(--#{$slug}-h),
+    var(--#{$slug}-s),
+    calc(var(--#{$slug}-l) + #{$lightness})
+  );
+}
+
+@function unit($val) {
+  @return calc(#{$val} * var(--unit, 1px));
+}
+.shape {
+  @include hsl-var(color, #331d09);
+  --color: #{hsl-var(color, var(--color-shading))};
+  --width: 100;
+  --_width: var(--width);
+  --depth: 100;
+  --_depth: var(--depth);
+  --top-width: var(--top-size, var(--width));
+  --top-depth: var(--top-size, var(--depth));
+  --height: 100;
+  --top-size: var(--width);
+  --top-offset-width: calc((var(--width) - var(--top-width)) / 2);
+  --top-offset-depth: calc((var(--depth) - var(--top-depth)) / 2);
+  --color-shading: 10;
+  --s-x: 1;
+  --s-y: 1;
+  --s-z: 1;
+  --x: 0;
+  --y: 0;
+  --z: 0;
+  --r-x: 0deg;
+  --r-y: 0deg;
+  --r-z: 0deg;
+  width: unit(var(--width));
+  height: unit(var(--depth));
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale3d(var(--s-x), var(--s-y), var(--s-z))
+    translate3d(unit(var(--x)), unit(var(--y)), unit(var(--z)))
+    rotateX(var(--r-x)) rotateY(var(--r-y)) rotateZ(var(--r-z));
+  scale: var(--s-x, 1) var(--s-y, 1) var(--s-z, 1);
+
+  // top and bottom
+  &:before,
+  &:after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color);
+  }
+
+  //top
+  &:after {
+    transform: translateZ(unit(var(--height)));
+    width: unit(var(--top-width));
+    height: unit(var(--top-depth));
+  }
+
+  // axis
+  > * {
+    // bottom plate
+    @include calc-angles(var(--axis-top-offset-width), var(--height));
+    --side-color: hsl(from var(--color) h s calc(l - var(--color-shading)));
+    --axis-rotation: 0deg;
+    --axis-top-offset-width: var(--top-offset-width);
+    --axis-top-offset-depth: var(--top-offset-depth);
+    --axis-top-width: var(--top-depth);
+    --axis-width: var(--width);
+    --side-height: var(--long);
+    --r-base: -90deg;
+    --axis-depth: calc(var(--depth) * var(--side-width-multiplier));
+    --r: calc(90deg - var(--rot));
+    position: absolute;
+    height: unit(var(--axis-depth));
+    width: unit(var(--axis-width));
+    transform: rotate(calc(var(--i) * -180deg / var(--sides)));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // sides
+    &:before,
+    &:after {
+      --border-top: calc(
+        var(--axis-top-offset-depth) * var(--side-width-multiplier, 1)
+      );
+      --r-z: 0deg;
+      content: "";
+      height: unit(
+        calc(var(--axis-top-width) * var(--side-width-multiplier, 1))
+      );
+      border-left: unit(var(--side-height)) solid var(--side-color);
+      border-bottom: unit(var(--border-top)) solid transparent;
+      border-top: unit(var(--border-top)) solid transparent;
+      position: absolute;
+      transform: rotateX(var(--r-z)) rotateY(calc(var(--r-base) + var(--r)))
+        scale(1.005);
+      transform-origin: left center;
+      left: 0;
+    }
+
+    // oposite side
+    &:after {
+      transform-origin: right center;
+      right: 0;
+      left: auto;
+      border-right: unit(var(--side-height)) solid var(--side-color);
+      border-left: 0px solid transparent;
+      --r-z: -180deg;
+    }
+  }
+
+  //
+  > *:nth-child(even) {
+    @include calc-angles(var(--axis-top-offset-width), var(--height));
+    --side-color: hsl(from var(--color) h s l);
+    --axis-width: var(--depth);
+    --axis-top-offset-width: var(--top-offset-depth);
+    --axis-top-offset-depth: var(--top-offset-width);
+    --axis-top-width: var(--top-width);
+  }
+
+  // not square styling
+  &:has(* + * + *) {
+    --depth: var(--width);
+    --top-depth: var(--top-width);
+
+    > * {
+      background-color: var(--color);
+    }
+
+    &:after,
+    &:before {
+      display: none;
+    }
+  }
+
+  $multipliers: (
+    0.8,
+    1,
+    0.58,
+    0.42,
+    0.328,
+    0.272,
+    0.23,
+    0.198,
+    0.177,
+    0.158,
+    0.144,
+    0.132,
+    0.122,
+    0.113,
+    0.105,
+    0.099,
+    0.093,
+    0.088,
+    0.083,
+    0.079,
+    0.076,
+    0.072,
+    0.069
+  );
+  @for $i from 0 to $max-sides {
+    > *:nth-child(#{$i + 1}) {
+      --i: #{$i};
+    }
+
+    $repeat-var: "*";
+    @if ($i > 1) {
+      @for $j from 0 to $i - 1 {
+        $repeat-var: $repeat-var + " + *";
+      }
+
+      &:has(#{$repeat-var}) {
+        --sides: #{$i};
+        --side-width-multiplier: #{list.nth($multipliers, $i)};
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+.scene {
+  perspective: 1000px;
+
+  &,
+  *,
+  :before,
+  :after {
+    transform-style: preserve-3d;
+  }
+}

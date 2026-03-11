@@ -1,0 +1,36 @@
+@function unit($val) {
+  @return calc(#{$val} * var(--unit, 1px));
+}
+
+.group {
+  --width: 100;
+  --height: 100;
+  --depth: 100;
+  --s-x: 1;
+  --s-y: 1;
+  --s-z: 1;
+  --x: 0;
+  --y: 0;
+  --z: 0;
+  --r-x: 0deg;
+  --r-y: 0deg;
+  --r-z: 0deg;
+  width: unit(var(--width));
+  height: unit(var(--depth));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: scale3d(var(--s-x), var(--s-y), var(--s-z))
+    translate3d(unit(var(--x)), unit(var(--y)), unit(var(--z)))
+    rotateX(var(--r-x)) rotateY(var(--r-y,)) rotateZ(var(--r-z))
+    scale3d(
+      calc(var(--width) / 100),
+      calc(var(--depth) / 100),
+      calc(var(--height) / 100)
+    );
+
+  > * {
+    position: absolute;
+  }
+}

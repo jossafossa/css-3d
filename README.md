@@ -1,75 +1,136 @@
-# React + TypeScript + Vite
+# CSS 3D
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React application for creating 3D scenes using CSS transforms. Build complex 3D shapes and compositions with declarative React components.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🎨 **3D Shapes**: Create polygonal shapes with customizable properties
+- 📦 **Grouping**: Organize shapes into groups for complex compositions
+- 🎭 **Scene Management**: Built-in 3D scene rendering with CSS transforms
+- 🎯 **Component-based**: Modular and reusable 3D components
 
-## React Compiler
+## Getting Started
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Prerequisites
 
-Note: This will impact Vite dev & build performances.
+- Node.js (v18 or higher)
+- pnpm (recommended) or npm
 
-## Expanding the ESLint configuration
+### Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd css-3d
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies:
+```bash
+pnpm install
+```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3. Start the development server:
+```bash
+pnpm dev
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
+4. Open [http://localhost:5173](http://localhost:5173) to view the application.
+
+## Usage
+
+Create 3D compositions using the provided components:
+
+```tsx
+import { Scene, Group, Shape } from './components';
+
+function App() {
+  return (
+    <Scene>
+      <Group width={200} height={200} depth={200}>
+        <Shape
+          sides={8}
+          width={80}
+          height={30}
+          depth={80}
+          color="#ff0000"
+          z={60}
+        />
+      </Group>
+    </Scene>
+  );
+}
+```
+
+### Node-based Composition
+
+For complex 3D structures, you can define scenes using a node-based approach:
+
+```tsx
+import { Scene, Board, Nodes, type ShapeNode } from './components';
+
+const TREE = [
   {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
+    type: "group",
+    props: { width: 100, height: 100, depth: 100 },
+    children: [
+      // Tree trunk
+      {
+        type: "shape",
+        props: {
+          color: "#8B4513",
+          sides: 8,
+          width: 20,
+          height: 60,
+          depth: 20,
+          z: 30,
+        },
       },
-      // other options...
-    },
+      // Tree crown
+      {
+        type: "shape",
+        props: {
+          color: "#228B22",
+          sides: 8,
+          width: 80,
+          height: 40,
+          depth: 80,
+          z: 70,
+          topSize: 20,
+        },
+      },
+    ],
   },
-])
+] satisfies ShapeNode[];
+
+function App() {
+  return (
+    <Scene>
+      <Board>
+        <Nodes nodes={TREE} />
+      </Board>
+    </Scene>
+  );
+}
+```
+
+### Shape Properties
+
+- `sides`: Number of sides for the polygon (must be even)
+- `width`, `height`, `depth`: Dimensions of the shape
+- `topSize`: Size of the top face (for creating cones/pyramids)
+- `x`, `y`, `z`: Position coordinates
+- `color`: Fill color
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── Scene/     # 3D scene container
+│   ├── Shape/     # Individual 3D shapes
+│   ├── Group/     # Shape grouping
+│   ├── Board/     # Scene board component
+│   └── Nodes/     # Node management
+├── App.tsx
+└── main.tsx
 ```
